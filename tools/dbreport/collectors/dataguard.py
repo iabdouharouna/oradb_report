@@ -22,7 +22,7 @@ SELECT dest_id, db_unique_name, dest_role,
        TO_CHAR(estimated_startup_time, 'YYYY-MM-DD HH24:MI:SS') AS estimated_startup_time
 FROM v$archive_dest_status
 WHERE db_unique_name IS NOT NULL
-  AND dest_role IN ('PHYSICAL STANDBY', 'LOGICAL STANDBY', 'FAR SYNC STANDBY', 'SNAPSHOT STANDBY')
+  AND dest_role IS NOT NULL
 ORDER BY dest_id
 """
 
@@ -62,6 +62,11 @@ def collect_dataguard(connection, entry) -> CollectorResult:
     config = section.store(connection, "dataguard_config", DG_CONFIG_SQL, optional=True)
 
     sync = section.store(connection, "dataguard_standby_sync", DG_STANDBY_SYNC_SQL, optional=True)
+
+    # Filtrer les standbys valides (certaines versions Oracle n'ont pas dest_role ou valeurs différentes)
+    valid_roles = {'PHYSICAL STANDBY', 'LOGICAL STANDBY', 'FAR SYNC STANDBY', 'SNAPSHOT STANDBY'}
+    if sync:
+        sync = [row for row in sync if row.get("dest_role") in valid_roles]
 
     protection = section.first(connection, DG_PROTECTION_SQL, optional=True)
     if protection:
