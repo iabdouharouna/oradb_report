@@ -82,6 +82,10 @@ def _sample_snapshot() -> DatabaseSnapshot:
                 "dg_synced_count": 2,
                 "dg_gap_count": 0,
                 "dg_sync_status": "2/2 SYNC",
+                "dg_seq_gap_STANDBY1": 1,
+                "dg_transport_gap_STANDBY1": 0,
+                "dg_seq_gap_STANDBY2": 1,
+                "dg_transport_gap_STANDBY2": 0,
             },
             tables={
                 "dataguard_config": [
@@ -97,6 +101,9 @@ def _sample_snapshot() -> DatabaseSnapshot:
                         "synchronization_status": "OK",
                         "recovery_mode": "MANAGED REAL TIME APPLY",
                         "gap_status": "NO",
+                        "applied_seq#": 100,
+                        "archived_seq#": 101,
+                        "error": 0,
                         "estimated_startup_time": "2026-01-01 00:00:00",
                     },
                     {
@@ -107,6 +114,9 @@ def _sample_snapshot() -> DatabaseSnapshot:
                         "synchronization_status": "OK",
                         "recovery_mode": "MANAGED REAL TIME APPLY",
                         "gap_status": "NO",
+                        "applied_seq#": 100,
+                        "archived_seq#": 101,
+                        "error": 0,
                         "estimated_startup_time": "2026-01-01 00:00:00",
                     },
                 ],

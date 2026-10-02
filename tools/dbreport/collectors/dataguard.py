@@ -1,4 +1,4 @@
-"""Section - Data Guard (configuration, sync status, protection mode)."""
+"""Section - Data Guard (configuration, sync status, protection mode, gap analysis)."""
 
 from __future__ import annotations
 
@@ -17,6 +17,8 @@ DG_STANDBY_SYNC_SQL = """
 SELECT dest_id, db_unique_name, dest_role,
        synchronized, synchronization_status,
        recovery_mode, gap_status,
+       applied_seq#, archived_seq#,
+       error,
        TO_CHAR(estimated_startup_time, 'YYYY-MM-DD HH24:MI:SS') AS estimated_startup_time
 FROM v$archive_dest_status
 WHERE db_unique_name IS NOT NULL
@@ -46,6 +48,13 @@ ORDER BY timestamp DESC
 FETCH FIRST 20 ROWS ONLY
 """
 
+PRIMARY_SEQ_SQL = """
+SELECT MAX(sequence#) AS current_seq
+FROM v$archived_log
+WHERE resetlogs_id = (SELECT resetlogs_id FROM v$database)
+  AND standby_dest = 'NO'
+"""
+
 
 def collect_dataguard(connection, entry) -> CollectorResult:
     section = Section("dataguard")
@@ -63,6 +72,9 @@ def collect_dataguard(connection, entry) -> CollectorResult:
 
     section.store(connection, "dataguard_status", DG_STATUS_SQL, optional=True)
 
+    primary_seq = section.first(connection, PRIMARY_SEQ_SQL, optional=True)
+    primary_current_seq = primary_seq.get("current_seq") if primary_seq else None
+
     if sync:
         total = len(sync)
         synced = sum(1 for row in sync if str(row.get("synchronized") or "").upper() == "YES")
@@ -71,5 +83,21 @@ def collect_dataguard(connection, entry) -> CollectorResult:
         section.fact("dg_synced_count", synced)
         section.fact("dg_gap_count", gaps)
         section.fact("dg_sync_status", f"{synced}/{total} SYNC" + (f", {gaps} GAP" if gaps else ""))
+
+        if primary_current_seq is not None:
+            for row in sync:
+                applied = row.get("applied_seq#")
+                archived = row.get("archived_seq#")
+                db_name = row.get("db_unique_name")
+                if applied is not None:
+                    gap = primary_current_seq - applied
+                    if gap < 0:
+                        gap = 0
+                    section.fact(f"dg_seq_gap_{db_name}", gap)
+                if archived is not None:
+                    transport_gap = primary_current_seq - archived
+                    if transport_gap < 0:
+                        transport_gap = 0
+                    section.fact(f"dg_transport_gap_{db_name}", transport_gap)
 
     return section.result()
