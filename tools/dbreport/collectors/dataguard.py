@@ -43,7 +43,7 @@ ORDER BY name
 """
 
 DG_STATUS_SQL = """
-SELECT facility, severity, dest_id, message_num,
+SELECT facility, severity, dest_id, message_num, error_code,
        TO_CHAR(timestamp, 'YYYY-MM-DD HH24:MI:SS') AS timestamp,
        message
 FROM v$dataguard_status
