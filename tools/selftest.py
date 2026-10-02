@@ -89,8 +89,8 @@ def _sample_snapshot() -> DatabaseSnapshot:
             },
             tables={
                 "dataguard_config": [
-                    {"db_unique_name": "STANDBY1", "role": "PHYSICAL STANDBY", "parent_dbun": "DEMO"},
-                    {"db_unique_name": "STANDBY2", "role": "PHYSICAL STANDBY", "parent_dbun": "DEMO"},
+                    {"db_unique_name": "STANDBY1", "dest_role": "PHYSICAL STANDBY", "parent_dbun": "DEMO"},
+                    {"db_unique_name": "STANDBY2", "dest_role": "PHYSICAL STANDBY", "parent_dbun": "DEMO"},
                 ],
                 "dataguard_standby_sync": [
                     {
@@ -98,12 +98,11 @@ def _sample_snapshot() -> DatabaseSnapshot:
                         "db_unique_name": "STANDBY1",
                         "dest_role": "PHYSICAL STANDBY",
                         "synchronized": "YES",
-                        "synchronization_status": "OK",
-                        "recovery_mode": "MANAGED REAL TIME APPLY",
                         "gap_status": "NO",
-                        "applied_seq#": 100,
-                        "archived_seq#": 101,
+                        "APPLIED_SEQ#": 100,
+                        "ARCHIVED_SEQ#": 101,
                         "error": 0,
+                        "recovery_mode": "MANAGED REAL TIME APPLY",
                         "estimated_startup_time": "2026-01-01 00:00:00",
                     },
                     {
@@ -111,12 +110,11 @@ def _sample_snapshot() -> DatabaseSnapshot:
                         "db_unique_name": "STANDBY2",
                         "dest_role": "PHYSICAL STANDBY",
                         "synchronized": "YES",
-                        "synchronization_status": "OK",
-                        "recovery_mode": "MANAGED REAL TIME APPLY",
                         "gap_status": "NO",
-                        "applied_seq#": 100,
-                        "archived_seq#": 101,
+                        "APPLIED_SEQ#": 100,
+                        "ARCHIVED_SEQ#": 101,
                         "error": 0,
+                        "recovery_mode": "MANAGED REAL TIME APPLY",
                         "estimated_startup_time": "2026-01-01 00:00:00",
                     },
                 ],

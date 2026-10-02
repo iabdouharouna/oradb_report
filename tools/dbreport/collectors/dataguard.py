@@ -7,23 +7,28 @@ from ._base import Section
 
 
 DG_CONFIG_SQL = """
-SELECT db_unique_name, role, parent_dbun
+SELECT db_unique_name, dest_role, parent_dbun
 FROM v$dataguard_config
-WHERE role != 'PRIMARY DATABASE'
+WHERE dest_role != 'PRIMARY DATABASE'
 ORDER BY db_unique_name
 """
 
 DG_STANDBY_SYNC_SQL = """
-SELECT dest_id, db_unique_name, dest_role,
-       synchronized, synchronization_status,
-       recovery_mode, gap_status,
-       applied_seq#, archived_seq#,
-       error,
-       TO_CHAR(estimated_startup_time, 'YYYY-MM-DD HH24:MI:SS') AS estimated_startup_time
-FROM v$archive_dest_status
-WHERE db_unique_name IS NOT NULL
-  AND dest_role IS NOT NULL
-ORDER BY dest_id
+SELECT ads.dest_id,
+       ads.db_unique_name,
+       dgc.dest_role,
+       ads.synchronized,
+       ads.gap_status,
+       ads.applied_seq#,
+       ads.archived_seq#,
+       ads.error,
+       ads.recovery_mode,
+       TO_CHAR(ads.estimated_startup_time, 'YYYY-MM-DD HH24:MI:SS') AS estimated_startup_time
+FROM v$archive_dest_status ads
+JOIN v$dataguard_config dgc ON ads.db_unique_name = dgc.db_unique_name
+WHERE ads.db_unique_name IS NOT NULL
+  AND dgc.dest_role IN ('PHYSICAL STANDBY', 'LOGICAL STANDBY', 'FAR SYNC STANDBY', 'SNAPSHOT STANDBY')
+ORDER BY ads.dest_id
 """
 
 DG_PROTECTION_SQL = """
@@ -63,11 +68,6 @@ def collect_dataguard(connection, entry) -> CollectorResult:
 
     sync = section.store(connection, "dataguard_standby_sync", DG_STANDBY_SYNC_SQL, optional=True)
 
-    # Filtrer les standbys valides (certaines versions Oracle n'ont pas dest_role ou valeurs différentes)
-    valid_roles = {'PHYSICAL STANDBY', 'LOGICAL STANDBY', 'FAR SYNC STANDBY', 'SNAPSHOT STANDBY'}
-    if sync:
-        sync = [row for row in sync if row.get("dest_role") in valid_roles]
-
     protection = section.first(connection, DG_PROTECTION_SQL, optional=True)
     if protection:
         section.fact("dg_protection_mode", protection.get("protection_mode"))
@@ -91,8 +91,9 @@ def collect_dataguard(connection, entry) -> CollectorResult:
 
         if primary_current_seq is not None:
             for row in sync:
-                applied = row.get("applied_seq#")
-                archived = row.get("archived_seq#")
+                # Les colonnes Oracle 19c sont en majuscules: APPLIED_SEQ#, ARCHIVED_SEQ#
+                applied = row.get("applied_seq#") or row.get("APPLIED_SEQ#")
+                archived = row.get("archived_seq#") or row.get("ARCHIVED_SEQ#")
                 db_name = row.get("db_unique_name")
                 if applied is not None:
                     gap = primary_current_seq - applied
