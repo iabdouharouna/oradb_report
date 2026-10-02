@@ -1,0 +1,11 @@
+# Dependances Python du projet dbreport
+# Installees automatiquement par setup_project.py dans le venv local (.venv)
+oracledb>=2.0,<27
+Jinja2>=3.1
+openpyxl>=3.1
+
+# Optionnel : PyYAML n'est pas requis. L'inventaire est lu par un parseur
+# stdlib (sous-ensemble YAML) ou par PyYAML s'il est present. Decommenter pour
+# utiliser le parseur YAML complet (necessite un wheel/compilateur disponible) :
+# PyYAML>=6.0
+

@@ -1,0 +1,8 @@
+.venv/
+.env
+output/
+.dbreport/
+*.egg-info/
+__pycache__/
+*.pyc
+.dbreport-deps.sha256
