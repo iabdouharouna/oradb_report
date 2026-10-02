@@ -103,7 +103,6 @@ def _sample_snapshot() -> DatabaseSnapshot:
                         "ARCHIVED_SEQ#": 101,
                         "error": 0,
                         "recovery_mode": "MANAGED REAL TIME APPLY",
-                        "estimated_startup_time": "2026-01-01 00:00:00",
                     },
                     {
                         "dest_id": 3,
@@ -115,7 +114,6 @@ def _sample_snapshot() -> DatabaseSnapshot:
                         "ARCHIVED_SEQ#": 101,
                         "error": 0,
                         "recovery_mode": "MANAGED REAL TIME APPLY",
-                        "estimated_startup_time": "2026-01-01 00:00:00",
                     },
                 ],
                 "dataguard_stats": [

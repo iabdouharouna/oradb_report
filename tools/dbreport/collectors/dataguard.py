@@ -22,8 +22,7 @@ SELECT ads.dest_id,
        ads.applied_seq#,
        ads.archived_seq#,
        ads.error,
-       ads.recovery_mode,
-       TO_CHAR(ads.estimated_startup_time, 'YYYY-MM-DD HH24:MI:SS') AS estimated_startup_time
+       ads.recovery_mode
 FROM v$archive_dest_status ads
 JOIN v$dataguard_config dgc ON ads.db_unique_name = dgc.db_unique_name
 WHERE ads.db_unique_name IS NOT NULL
