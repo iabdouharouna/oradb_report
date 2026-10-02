@@ -7,9 +7,9 @@ from ._base import Section
 
 
 DG_CONFIG_SQL = """
-SELECT db_unique_name, dest_role, parent_dbun
+SELECT db_unique_name, role, parent_dbun
 FROM v$dataguard_config
-WHERE dest_role != 'PRIMARY DATABASE'
+WHERE role != 'PRIMARY DATABASE'
 ORDER BY db_unique_name
 """
 

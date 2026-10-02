@@ -89,8 +89,8 @@ def _sample_snapshot() -> DatabaseSnapshot:
             },
             tables={
                 "dataguard_config": [
-                    {"db_unique_name": "STANDBY1", "dest_role": "PHYSICAL STANDBY", "parent_dbun": "DEMO"},
-                    {"db_unique_name": "STANDBY2", "dest_role": "PHYSICAL STANDBY", "parent_dbun": "DEMO"},
+                    {"db_unique_name": "STANDBY1", "role": "PHYSICAL STANDBY", "parent_dbun": "DEMO"},
+                    {"db_unique_name": "STANDBY2", "role": "PHYSICAL STANDBY", "parent_dbun": "DEMO"},
                 ],
                 "dataguard_standby_sync": [
                     {
