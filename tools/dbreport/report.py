@@ -294,6 +294,21 @@ def _band(sheet, row: int, ncols: int, text: str) -> int:
     return row + 1
 
 
+
+def _heatmap_excel_color(value: Any, maxh: float) -> str | None:
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return None
+    if maxh <= 0:
+        return None
+    if value <= 0:
+        return "F8FAFC"
+    r = value / maxh
+    if r <= 0.33:
+        return "DCFCE7"
+    if r < 0.66:
+        return "FEF3C7"
+    return "FEE2E2"
+
 def _threshold_color(column: str, value: Any) -> str | None:
     """Couleur d'alerte selon le nom de colonne et la valeur."""
 
@@ -328,19 +343,34 @@ def _table_header(sheet, row: int, columns: list[str]) -> int:
     return row + 1
 
 
-def _table_rows(sheet, row: int, rows: list[dict[str, Any]]) -> int:
+def _table_rows(sheet, row: int, rows: list[dict[str, Any]], table_name: str = "") -> int:
     columns = _csv_columns(rows)
     row = _table_header(sheet, row, columns)
+    is_heat = table_name == "archive_log_volume_7d_hourly_gb"
     for position, item in enumerate(rows):
+        maxh = 0.0
+        if is_heat:
+            for h in range(24):
+                key = f"h{h:02d}"
+                v = item.get(key)
+                if isinstance(v, (int, float)) and not isinstance(v, bool) and v > maxh:
+                    maxh = v
         for col, name in enumerate(columns, start=1):
             value = item.get(name)
             cell = sheet.cell(row=row, column=col, value=value if value is not None else "")
             cell.border = _thin_border()
-            if position % 2:
-                cell.fill = PatternFill("solid", fgColor=_BAND)
-            color = _threshold_color(name, value)
-            if color:
-                cell.font = Font(color=color, bold=True)
+            if is_heat and name.startswith('h'):
+                hc = _heatmap_excel_color(value, maxh)
+                if hc:
+                    cell.fill = PatternFill("solid", fgColor=hc)
+                elif position % 2:
+                    cell.fill = PatternFill("solid", fgColor=_BAND)
+            else:
+                if position % 2:
+                    cell.fill = PatternFill("solid", fgColor=_BAND)
+                color = _threshold_color(name, value)
+                if color:
+                    cell.font = Font(color=color, bold=True)
         row += 1
     return row
 
@@ -470,7 +500,7 @@ def write_workbook(
                 sheet.cell(row=row, column=1, value=table).font = Font(bold=True, color=_ACCENT)
                 row += 1
                 if table_rows:
-                    row = _table_rows(sheet, row, table_rows)
+                    row = _table_rows(sheet, row, table_rows, table)
                 else:
                     sheet.cell(row=row, column=1, value="(aucune ligne)").font = Font(
                         italic=True, color=_MUTED

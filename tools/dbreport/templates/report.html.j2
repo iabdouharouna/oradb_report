@@ -51,6 +51,12 @@
   thead th{background:#f8fafc;color:#334155;position:sticky;top:0;font-weight:600}
   tbody tr:nth-child(even){background:#fbfcfe}
   .tablewrap{overflow:auto;border-radius:10px;border:1px solid var(--line);max-height:440px}
+  .heatmap-cell{font-size:.75rem;text-align:right}
+  .heatmap-empty{background:#f8fafc;color:#94a3b8}
+  .heatmap-low{background:#dcfce7;color:#166534}
+  .heatmap-mid{background:#fef3c7;color:#92400e}
+  .heatmap-high{background:#fee2e2;color:#991b1b}
+
   .facts{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:4px 16px;margin:6px 0}
   .facts dt{color:var(--muted)}.facts dd{margin:0;font-weight:600}
   .section{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
@@ -143,6 +149,24 @@
         {% for table, rows in section.tables.items() %}
           <p class="muted" style="margin:10px 0 2px"><strong>{{ table }}</strong></p>
           {% if rows %}
+          {% if table == "archive_log_volume_7d_hourly_gb" and rows %}
+          <div class="tablewrap">
+            <table>
+              <thead><tr>{% for col in rows[0].keys() %}<th>{{ col }}</th>{% endfor %}</tr></thead>
+              <tbody>
+                {% for row in rows %}
+                {% set ns = namespace(maxh=0) %}
+                {% for h in range(0,24) %}
+                  {% set c = 'h%02d' % h %}
+                  {% set v = row.get(c) %}
+                  {% if v is number and v > ns.maxh %}{% set ns.maxh = v %}{% endif %}
+                {% endfor %}
+                <tr>{% for col in rows[0].keys() %}{% if col.startswith('h') %}{% set v = row.get(col) %}{% if v is none or v == 0 %}<td class="heatmap-cell heatmap-empty">{{ v if v is not none else '' }}</td>{% else %}{% set r = (v / ns.maxh) if ns.maxh > 0 else 0 %}{% if r <= 0.33 %}<td class="heatmap-cell heatmap-low">{{ "%.2f"|format(v) }}</td>{% elif r < 0.66 %}<td class="heatmap-cell heatmap-mid">{{ "%.2f"|format(v) }}</td>{% else %}<td class="heatmap-cell heatmap-high">{{ "%.2f"|format(v) }}</td>{% endif %}{% endif %}{% elif col == 'day' or col == 'total_gb' %}<td>{{ row.get(col) if row.get(col) is not none else '' }}</td>{% else %}<td>{{ row.get(col) if row.get(col) is not none else '' }}</td>{% endif %}{% endfor %}</tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
           <div class="tablewrap">
             <table>
               <thead><tr>{% for col in rows[0].keys() %}<th>{{ col }}</th>{% endfor %}</tr></thead>
@@ -153,6 +177,7 @@
               </tbody>
             </table>
           </div>
+          {% endif %}
           {% else %}
           <p class="muted">Aucune ligne.</p>
           {% endif %}
