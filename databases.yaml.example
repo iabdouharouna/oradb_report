@@ -1,0 +1,24 @@
+# ============================================================================
+# dbreport - inventaire des bases Oracle de production a auditer
+#
+# Chaque entree decrit une base. Le mot de passe est fortement deconseille ici :
+# preferez la variable d'environnement ORAREPORT_<NOM>_PASSWORD (voir .env).
+#
+# Champs :
+#   name        : identifiant logique (utilise dans les rapports et les variables)
+#   dsn         : chaine Easy Connect  <hote>:<port>/<service>
+#   user        : compte de collecte en LECTURE SEULE (DBA_*, V$ selon droits)
+#   password    : (optionnel) mot de passe en clair — preferer ORAREPORT_<NOM>_PASSWORD
+#   role        : (optionnel) SYSDBA / SYSOPER
+#   environment : etiquette d'environnement (prod, recette, ...)
+#   service     : primary | standby
+#   tags        : liste libre (region, domaine metier, ...)
+# ============================================================================
+
+databases:
+  - name: FREE
+    dsn: localhost:1521/FREE
+    user: dbsnmp
+    environment: test
+    service: FREE
+    tags: [freedb]

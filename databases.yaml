@@ -16,9 +16,27 @@
 # ============================================================================
 
 databases:
-  - name: FREE
-    dsn: localhost:1521/FREE
+  - name: PRDPBOSW
+    dsn: 172.16.1.94:1527/PBOSW
     user: dbsnmp
-    environment: test
-    service: FREE
-    tags: [freedb]
+    environment: production
+    service: PBOSW
+    tags: [prod_sw_bo]
+  - name: PRDPFESW
+    dsn: 172.16.1.92:1527/PFESW
+    user: dbsnmp
+    environment: production
+    service: PFESW
+    tags: [prod_sw_fe]
+  - name: PRDPRCBO
+    dsn: 172.16.1.26:1521/prcbo
+    user: dbsnmp
+    environment: production
+    service: prcbo
+    tags: [prod_pr_bo]
+  - name: PRDPRCFE
+    dsn: 172.16.1.21:1521/prcfe
+    user: dbsnmp
+    environment: production
+    service: prcfe
+    tags: [prod_pr_fe]
